@@ -16,6 +16,7 @@ class Sidebar(Container):
 
 
 class TextEditor(App):
+    TITLE = "Text editor"
     CSS_PATH = "assets/css/styles.tcss"
     BINDINGS: ClassVar[list[BindingType]] = [
         ("q", "quit", "Quit"),
@@ -26,7 +27,7 @@ class TextEditor(App):
         super().__init__(*args, **kwargs)
 
     def compose(self) -> ComposeResult:
-        yield Header()
+        yield Header(show_clock=True)
         with Horizontal():
             yield Sidebar(classes="sidebar")
             with VerticalScroll():
@@ -36,7 +37,7 @@ class TextEditor(App):
     def action_toggle_sidebar(self) -> None:
         self.query_one(Sidebar).toggle_class("-hidden")
 
-    @on(TextArea.Changed, selector="current-editor")
+    @on(TextArea.Changed, selector="#current-editor")
     def handle_text_area_changed(self, event: TextArea.Changed):
         self.log(event)
 
