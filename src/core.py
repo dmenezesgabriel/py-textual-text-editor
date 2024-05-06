@@ -24,16 +24,21 @@ class TextEditor(App):
 
     def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
-        self.text_area = TextArea().code_editor()
-        self.opened_files = []
 
     def compose(self) -> ComposeResult:
         yield Header()
-        yield Horizontal(Sidebar(), VerticalScroll(self.text_area))
+        with Horizontal():
+            yield Sidebar(classes="sidebar")
+            with VerticalScroll():
+                yield TextArea().code_editor(id="current-editor")
         yield Footer()
 
     def action_toggle_sidebar(self) -> None:
         self.query_one(Sidebar).toggle_class("-hidden")
+
+    @on(TextArea.Changed, selector="current-editor")
+    def handle_text_area_changed(self, event: TextArea.Changed):
+        self.log(event)
 
     @on(DirectoryTree.FileSelected)
     def handle_file_selected(
@@ -48,12 +53,13 @@ class TextEditor(App):
             return None
         lexer = Syntax.guess_lexer(path=message.path.name, code=file_content)
 
-        self.text_area.clear()
+        editor = self.query_one("#current-editor")
+        editor.clear()
         try:
-            self.text_area.language = lexer
+            editor.language = lexer
         except Exception:
             pass
-        self.text_area.text = file_content
+        editor.text = file_content
 
 
 app = TextEditor()
